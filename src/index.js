@@ -8,6 +8,7 @@ import { apiPlugin, storyblokInit } from "@storyblok/react";
 import Feature from "./components/Feature";
 import Features from "./components/Features";
 import Footer from "./components/Footer";
+import Header from "./components/Header";
 import Hero from "./components/Hero";
 import Link from "./components/Link";
 import Page from "./components/Page";
@@ -26,7 +27,8 @@ storyblokInit({
     plan: Plans,
     pricing: Pricing,
     link: Link,
-    hero: Hero
+    hero: Hero,
+    header: Header
   },
   
   apiOptions: {

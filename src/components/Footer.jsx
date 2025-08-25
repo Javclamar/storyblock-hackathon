@@ -1,12 +1,15 @@
 import { StoryblokComponent, storyblokEditable } from "@storyblok/react";
+import "../styles/Footer.css";
 
 const Footer = ({ blok }) => (
-  <div {...storyblokEditable(blok)}>
-    {blok.links?.map((nestedBlok) => (
-        <StoryblokComponent blok={nestedBlok} key={nestedBlok._uid} />
-    ))}
+  <footer className="footer" {...storyblokEditable(blok)}>
+    <div className="footer-links">
+      {blok.links?.map((nestedBlok) => (
+          <StoryblokComponent blok={nestedBlok} key={nestedBlok._uid} />
+      ))}
+    </div>
     <h1>{blok.copyright}</h1>
-  </div>
+  </footer>
 );
 
 export default Footer;

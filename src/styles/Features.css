@@ -1,0 +1,42 @@
+.features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    justify-content: center;
+    padding: 4rem 2rem;
+    background-color: var(--secondary-color);
+}
+
+.feature {
+    background-color: var(--primary-color);
+    border-radius: 0.5rem;
+    padding: 2rem;
+    flex: 1 1 250px;
+    max-width: 300px;
+    text-align: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+    color: var(--text-color);
+}
+
+.feature:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+.feature h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.feature img {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 1rem;
+}
+
+.feature p {
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.5;
+}
