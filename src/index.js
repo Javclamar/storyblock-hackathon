@@ -6,19 +6,29 @@ import "./index.css";
 import { apiPlugin, storyblokInit } from "@storyblok/react";
 
 import Feature from "./components/Feature";
-import Grid from "./components/Grid";
+import Features from "./components/Features";
+import Footer from "./components/Footer";
+import Hero from "./components/Hero";
+import Link from "./components/Link";
 import Page from "./components/Page";
-import Teaser from "./components/Teaser";
+import Plans from "./components/Plans";
+import Pricing from "./components/Pricing";
 
 storyblokInit({
   accessToken: process.env.REACT_APP_DELIVERY_API_TOKEN,
   use: [apiPlugin],
   components: {
     page: Page,
-    teaser: Teaser,
-    grid: Grid,
     feature: Feature,
+    features: Features,
+    footer: Footer,
+    plans: Plans,
+    plan: Plans,
+    pricing: Pricing,
+    link: Link,
+    hero: Hero
   },
+  
   apiOptions: {
     // for spaces located in the US or China:
     // region: "us" or "cn", // you need to specify the region
