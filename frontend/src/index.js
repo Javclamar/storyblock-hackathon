@@ -14,6 +14,7 @@ import Link from "./components/Link";
 import Page from "./components/Page";
 import Plans from "./components/Plans";
 import Pricing from "./components/Pricing";
+import About_Hero from "./components/About _Hero";
 
 storyblokInit({
   accessToken: process.env.REACT_APP_DELIVERY_API_TOKEN,
@@ -28,7 +29,9 @@ storyblokInit({
     pricing: Pricing,
     link: Link,
     hero: Hero,
-    header: Header
+    header: Header,
+    about_hero: About_Hero
+
   },
   
   apiOptions: {

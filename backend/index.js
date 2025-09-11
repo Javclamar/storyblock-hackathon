@@ -6,22 +6,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-function parseAIResponse(rawResponse) {
+function parseAIResponse(rawResponse, fieldMapping) {
     const lines = rawResponse.split('\n');
     const contentMap = {};
-    
-    // Create field mapping for Storyblok structure
-     const fieldMapping = {
-        'hero_headline': ['hero', 'headline'],
-        'hero_subheadline': ['hero', 'subheadline'],
-        'cta_hero_text': ['hero', 'cta_text'],
-        'feature1_title': ['features', 'items', 0, 'title'],
-        'feature1_description': ['features', 'items', 0, 'description'],
-        'feature2_title': ['features', 'items', 1, 'title'],
-        'feature2_description': ['features', 'items', 1, 'description'],
-        'feature3_title': ['features', 'items', 2, 'title'],
-        'feature3_description': ['features', 'items', 2, 'description']
-    };
     
     lines.forEach(line => {
         line = line.replace(/^\*?\s*/, '').trim();
@@ -47,7 +34,7 @@ function mergeWithStoryblok(storyblokData, generatedContent) {
     const merged = [];
     
     storyblokData.forEach(block => {
-        const newBlock = { ...block }; // Preserve original block structure
+        const newBlock = { ...block };
         
         Object.entries(generatedContent).forEach(([key, content]) => {
             const [componentType] = content.path;
@@ -74,6 +61,10 @@ function mergeWithStoryblok(storyblokData, generatedContent) {
                         };
                     }
                 }
+                else if (componentType === 'about_hero') {
+                    const [_, field] = content.path;
+                    newBlock[field] = content.value;
+                }
             }
         });
         
@@ -83,7 +74,8 @@ function mergeWithStoryblok(storyblokData, generatedContent) {
     return merged;
 }
 
-app.post("/api/generate", async (req, res) => {
+// Endpoint to generate AI content for the home page
+app.post("/api/generate/hackathon/home", async (req, res) => {
     const { blocks, userContext } = req.body;
     
     const prompt = `
@@ -137,14 +129,25 @@ Generate personalized content based on the template structure:`;
 
         const aiData = await aiResponse.json();
         
-        // Log the raw response for debugging
         console.log("Raw AI Response:", aiData.response);
         
         if (!aiData.response) {
             throw new Error("No response from AI model");
         }
 
-        const parsedContent = parseAIResponse(aiData.response);
+        const fieldMapping = {
+            'hero_headline': ['hero', 'headline'],
+            'hero_subheadline': ['hero', 'subheadline'],
+            'cta_hero_text': ['hero', 'cta_text'],
+            'feature1_title': ['features', 'items', 0, 'title'],
+            'feature1_description': ['features', 'items', 0, 'description'],
+            'feature2_title': ['features', 'items', 1, 'title'],
+            'feature2_description': ['features', 'items', 1, 'description'],
+            'feature3_title': ['features', 'items', 2, 'title'],
+            'feature3_description': ['features', 'items', 2, 'description']
+        };
+
+        const parsedContent = parseAIResponse(aiData.response, fieldMapping);
         console.log("Parsed content:", util.inspect(parsedContent, {
             depth: null,
             colors: true,
@@ -158,7 +161,6 @@ Generate personalized content based on the template structure:`;
             maxArrayLength: null
         }));
         
-        // Return the correct structure
         res.json({
             content: {
                 body: mergedContent
@@ -180,6 +182,99 @@ Generate personalized content based on the template structure:`;
 // Health check endpoint
 app.get("/health", (req, res) => {
     res.json({ status: "OK", timestamp: new Date().toISOString() });
+});
+
+// Endpoint to generate AI content for other about page
+app.post("/api/generate/hackathon/about", async (req, res) => {
+    const { blocks, userContext } = req.body;
+    
+    const prompt = `
+You are generating content for a React + Storyblok about page of a SaaS that provides an online coworking space.
+
+
+${userContext ? `User context: ${JSON.stringify(userContext)}` : ''}
+
+The structure of the storyblok json is:
+${JSON.stringify(blocks, null, 2)}
+
+IMPORTANT INSTRUCTIONS:
+
+1. Look the structure for context
+2. You are making just the content, just respond with the values for each field, dont make an html, markdown, just text
+3. Your return must follow this template and this online, dont return anything more:
+
+title: your response
+subtitle: your response
+description: your response
+
+Generate personalized content based on the template structure:`;
+
+    try {
+        const aiResponse = await fetch("http://localhost:11434/api/generate", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                model: "llama3:8b",
+                prompt: prompt,
+                stream: false,
+                options: {
+                    temperature: 0.7,
+                    top_p: 0.9,
+                    repeat_penalty: 1.1
+                }
+            })
+        });
+
+        if (!aiResponse.ok) {
+            throw new Error(`AI API responded with status: ${aiResponse.status}`);
+        }
+
+        const aiData = await aiResponse.json();
+        
+        console.log("Raw AI Response:", aiData.response);
+        
+        if (!aiData.response) {
+            throw new Error("No response from AI model");
+        }
+
+        const fieldMapping = {
+            'title': ['about_hero', 'title'],
+            'subtitle': ['about_hero', 'subtitle'],
+            'description': ['about_hero', 'description']
+        };
+
+        const parsedContent = parseAIResponse(aiData.response, fieldMapping);
+        console.log("Parsed content:", util.inspect(parsedContent, {
+            depth: null,
+            colors: true,
+            maxArrayLength: null
+        }));
+
+        const mergedContent = mergeWithStoryblok(blocks, parsedContent);
+        console.log("Merged content:", util.inspect(mergedContent, {
+            depth: null,
+            colors: true,
+            maxArrayLength: null
+        }));
+        
+        res.json({
+            content: {
+                body: mergedContent
+            }
+        });
+        
+    } catch (err) {
+        console.error("Error details:", err.message);
+        console.error("Full error:", err);
+        
+        res.status(500).json({ 
+            success: false,
+            error: "AI generation failed",
+            details: err.message
+        });
+    }
 });
 
 const PORT = process.env.PORT || 5000;
