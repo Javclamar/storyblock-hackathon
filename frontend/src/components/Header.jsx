@@ -11,9 +11,9 @@ const Header = ({ blok }) => (
         />
       )}
     </div>
-    
+
     <nav className="header-nav">
-      <a href={blok.link1}>{blok.nav_link1}</a>
+      <a href={blok.link1.linktype === 'story' ? `/${blok.link1.cached_url}` : blok.link1.url}>{blok.nav_link1}</a>
       <a href={blok.link2}>{blok.nav_link2}</a>
       <a href={blok.link3}>{blok.nav_link3}</a>
     </nav>

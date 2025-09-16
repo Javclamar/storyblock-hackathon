@@ -189,8 +189,7 @@ app.post("/api/generate/hackathon/about", async (req, res) => {
     const { blocks, userContext } = req.body;
     
     const prompt = `
-You are generating content for a React + Storyblok about page of a SaaS that provides an online coworking space.
-
+You are generating content for a React + Storyblok About page of a SaaS that provides an online coworking space name OnTime.
 
 ${userContext ? `User context: ${JSON.stringify(userContext)}` : ''}
 
@@ -202,6 +201,8 @@ IMPORTANT INSTRUCTIONS:
 1. Look the structure for context
 2. You are making just the content, just respond with the values for each field, dont make an html, markdown, just text
 3. Your return must follow this template and this online, dont return anything more:
+4. The description must be at leats 70 words long
+5. The title must be catchy and attractive
 
 title: your response
 subtitle: your response
