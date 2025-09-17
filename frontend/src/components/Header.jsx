@@ -5,10 +5,12 @@ const Header = ({ blok }) => (
   <header {...storyblokEditable(blok)} className="header">
     <div className="header-logo">
       {blok.logo?.filename && (
+        < a href="/hackathon/home">
         <img
           src={blok.logo.filename}
           alt={blok.logo.alt || "logo"}
         />
+        </a>
       )}
     </div>
 
