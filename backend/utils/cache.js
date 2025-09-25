@@ -3,20 +3,28 @@ import path from 'path';
 import crypto from 'crypto';
 
 const CACHE_DIR = path.join(process.cwd(), 'cache');
-const CACHE_DURATION = 1000 * 60 * 60; // 1 hour
+const CACHE_DURATION = 1000 * 60 * 60;
 
-// Create cache directory if it doesn't exist
-await fs.mkdir(CACHE_DIR, { recursive: true });
+const initCache = async () => {
+    try {
+        await fs.access(CACHE_DIR);
+    } catch {
+        await fs.mkdir(CACHE_DIR, { recursive: true });
+        console.log('Cache directory created');
+    }
+};
 
-export const generateCacheKey = (userId, endpoint, blocks) => {
-    const content = `${userId}-${endpoint}-${JSON.stringify(blocks)}`;
+export const generateCacheKey = (userId, endpoint) => {
+    const content = `${userId}-${endpoint}}`;
     return crypto.createHash('md5').update(content).digest('hex');
 };
 
-export const getCachedContent = async (userId, endpoint, blocks) => {
+export const getCachedContent = async (userId, endpoint) => {
     if (!userId) return null;
+
+    await initCache();
     
-    const cacheKey = generateCacheKey(userId, endpoint, blocks);
+    const cacheKey = generateCacheKey(userId, endpoint);
     const cacheFile = path.join(CACHE_DIR, `${cacheKey}.json`);
     
     try {
@@ -32,10 +40,10 @@ export const getCachedContent = async (userId, endpoint, blocks) => {
     }
 };
 
-export const setCachedContent = async (userId, endpoint, blocks, content) => {
+export const setCachedContent = async (userId, endpoint, content) => {
     if (!userId) return;
     
-    const cacheKey = generateCacheKey(userId, endpoint, blocks);
+    const cacheKey = generateCacheKey(userId, endpoint);
     const cacheFile = path.join(CACHE_DIR, `${cacheKey}.json`);
     
     await fs.writeFile(cacheFile, JSON.stringify(content), 'utf-8');

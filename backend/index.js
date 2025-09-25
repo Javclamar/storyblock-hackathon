@@ -6,8 +6,9 @@ import aboutController from "./controllers/aboutController.js";
 
 const app = express();
 app.use(cors({
-    origin: 'htttp://localhost:3000',
-    credentials: true
+    origin: ['http://localhost:3000', 'https://localhost:3010'],
+    credentials: true,
+    methods: ['GET', 'POST'],
 }));
 app.use(express.json());
 app.use(sessionConfig);

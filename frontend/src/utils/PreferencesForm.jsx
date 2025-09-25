@@ -1,0 +1,74 @@
+import { useState } from "react";
+
+function PreferencesForm({ onSave }) {
+  const [teamSize, setTeamSize] = useState("solo");
+  const [language, setLanguage] = useState("en");
+  const [industry, setIndustry] = useState("software");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const prefs = { teamSize, language, industry, isComplete: true };
+    localStorage.setItem("userPreferences", JSON.stringify(prefs));
+    onSave(prefs);
+  };
+
+  return (
+    <div className="p-6 max-w-md mx-auto">
+      <h2 className="text-xl font-bold mb-4">Set your preferences</h2>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <label>
+          :Team Size
+          <select
+            value={teamSize}
+            onChange={(e) => setTeamSize(e.target.value)}
+            className="ml-2 border rounded p-1"
+          >
+            <option value="solo">Solo</option>
+            <option value="small team">Small Team</option>
+            <option value="growing team">Growing Team</option>
+            <option value="enterprise">Enterprise</option>
+          </select>
+        </label>
+
+        <label>
+          Language:
+          <select
+            value={language}
+            onChange={(e) => setLanguage(e.target.value)}
+            className="ml-2 border rounded p-1"
+          >
+            <option value="en">English</option>
+            <option value="es">Español</option>
+          </select>
+        </label>
+
+        <label>
+          Industry:
+          <select
+            value={industry}
+            onChange={(e) => setIndustry(e.target.value)}
+            className="ml-2 border rounded p-1"
+          >
+            <option value="software">Software Development</option>
+            <option value="education">Educational</option>
+            <option value="healthcare">Healthcare</option>
+            <option value="finance">Finance</option>
+            <option value="ecommerce">E-commerce</option>
+            <option value="marketing">Marketing/Advertising</option>
+            <option value="nonprofit">Non-profit</option>
+            <option value="other">Other</option>
+          </select>
+        </label>
+
+        <button
+          type="submit"
+          className="bg-blue-600 text-white px-4 py-2 rounded"
+        >
+          Save Preferences
+        </button>
+      </form>
+    </div>
+  );
+}
+
+export default PreferencesForm;

@@ -1,25 +1,42 @@
 import { parseAIResponse, mergeWithStoryblok } from "../utils/jsonParsing.js";
-import util from 'util';
+import { getCachedContent, setCachedContent } from "../utils/cache.js";
+import { makeAIRequest } from "./aiController.js";
 
 const homeController = async (req, res) => {
-    const { blocks, userContext } = req.body;
+    const { blocks, preferences } = req.body;
+    const sessionId = req.session.id;
+
+    console.log("Received preferences:", preferences);
     
-    const prompt = `
-You are generating content for a React + Storyblok home page for a SaaS to provide an online coworking space.
+    const cacheKey = `${sessionId}-${preferences?.isComplete ? 'personalized' : 'generic'}`;
 
-${userContext ? `User context: ${JSON.stringify(userContext)}` : ''}
+    const buildPersonalizedPrompt = (preferences) => {
+        let basePrompt = `You are generating content for a React + Storyblok home page for a SaaS that provides an online coworking space named OnTime.`;
+        
+        if (preferences?.isComplete) {
+            basePrompt += `
 
-The structure of the storyblok json is:
-${JSON.stringify(blocks, null, 2)}
+PERSONALIZATION CONTEXT:
+- Target Industry: (${preferences.industry} industry)
+- Target Language: (${preferences.language})
+- Team Size: (${preferences.teamSize})
+
+PERSONALIZATION INSTRUCTIONS:
+- Tailor the language and messaging for the ${preferences.industry} industry
+- Write in a tone that appeals to ${preferences.teamSize} teams
+- Reference how OnTime can specifically help ${preferences.industry} companies`;
+        }
+
+        return basePrompt + `
+
+The platform features: real-time collaboration, task management, video conferencing, and integrations with popular tools like Jira and Notion.
 
 IMPORTANT INSTRUCTIONS:
 
-1. Look the structure for context
-2. You are making just the content, just respond with the values for each field, dont make an html, markdown, just text
-3. Your return must follow this template and this online, dont return anything more:
+1. Your return must follow this template exactly, don't return anything more:
 
-hero_headline: your response
-hero_subheadline: your response
+headline: your response
+subheadline: your response
 cta_hero_text: your response
 feature1_title: your response
 feature1_description: your response
@@ -28,42 +45,47 @@ feature2_description: your response
 feature3_title: your response
 feature3_description: your response
 
+2. Feature1 must focus on portability, Feature2 on collaboration, Feature3 on connectivity
+3. The headline must be at least 8 words long
+4. The subheadline must be at least 15 words long
+5. Each feature description must be at least 30 words long
+${preferences?.isComplete ? `
+6. Make the content relevant to ${preferences.industry} professionals
+7. Use ${preferences.tone} language throughout
+8. Include subtle references to ${preferences.companyName} or similar companies when appropriate` : ''}
 
-Generate personalized content based on the template structure:`;
+Generate engaging content that would attract users to the OnTime platform:`;
+    };
 
     try {
-        const aiResponse = await fetch("http://localhost:11434/api/generate", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                model: "llama3:8b",
-                prompt: prompt,
-                stream: false,
-                options: {
-                    temperature: 0.7,
-                    top_p: 0.9,
-                    repeat_penalty: 1.1
-                }
-            })
-        });
-
-        if (!aiResponse.ok) {
-            throw new Error(`AI API responded with status: ${aiResponse.status}`);
+        const cached = await getCachedContent(cacheKey, 'hackathon/home', blocks);
+        if (cached) {
+            console.log(`Cache hit for ${preferences?.isComplete ? 'personalized' : 'generic'} content - ${cacheKey}`);
+            return res.json({
+                content: {
+                    body: cached
+                },
+                cached: true,
+                personalized: preferences?.isComplete || false
+            });
         }
 
-        const aiData = await aiResponse.json();
+        console.log(`Cache miss for ${preferences?.isComplete ? 'personalized' : 'generic'} content - ${cacheKey}`);
+
+        // Generate personalized prompt
+        const personalizedPrompt = buildPersonalizedPrompt(preferences);
         
-        console.log("Raw AI Response:", aiData.response);
+        // Make AI request
+        const aiData = await makeAIRequest(personalizedPrompt);
         
         if (!aiData.response) {
             throw new Error("No response from AI model");
         }
 
+        // Field mapping remains the same
         const fieldMapping = {
-            'hero_headline': ['hero', 'headline'],
-            'hero_subheadline': ['hero', 'subheadline'],
+            'headline': ['hero', 'headline'],
+            'subheadline': ['hero', 'subheadline'],  
             'cta_hero_text': ['hero', 'cta_text'],
             'feature1_title': ['features', 'items', 0, 'title'],
             'feature1_description': ['features', 'items', 0, 'description'],
@@ -74,23 +96,22 @@ Generate personalized content based on the template structure:`;
         };
 
         const parsedContent = parseAIResponse(aiData.response, fieldMapping);
-        console.log("Parsed content:", util.inspect(parsedContent, {
-            depth: null,
-            colors: true,
-            maxArrayLength: null
-        }));
-
         const mergedContent = mergeWithStoryblok(blocks, parsedContent);
-        console.log("Merged content:", util.inspect(mergedContent, {
-            depth: null,
-            colors: true,
-            maxArrayLength: null
-        }));
         
+        // Cache with personalized key
+        await setCachedContent(cacheKey, 'hackathon/home', mergedContent);
+
         res.json({
             content: {
                 body: mergedContent
-            }
+            },
+            cached: false,
+            personalized: preferences?.isComplete || false,
+            preferences: preferences?.isComplete ? {
+                industry: preferences.industry,
+                tone: preferences.tone,
+                goal: preferences.primaryGoal
+            } : null
         });
         
     } catch (err) {
@@ -100,7 +121,8 @@ Generate personalized content based on the template structure:`;
         res.status(500).json({ 
             success: false,
             error: "AI generation failed",
-            details: err.message
+            details: err.message,
+            personalized: false
         });
     }
 }

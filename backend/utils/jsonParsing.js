@@ -45,25 +45,26 @@ function mergeWithStoryblok(storyblokData, generatedContent) {
 }
 
 function parseAIResponse(rawResponse, fieldMapping) {
-    const lines = rawResponse.split('\n');
     const contentMap = {};
+
+    const cleanedResponse = rawResponse.replace(/^.*?(?=\n\s*[a-zA-Z0-9_]+\s*:)/s, '').trim();
     
-    lines.forEach(line => {
-        line = line.replace(/^\*?\s*/, '').trim();
-        if (!line || !line.includes(':')) return;
+    const regex = /^(?:\*\*\s*)?([a-zA-Z0-9_]+)(?:\s*\*\*)?:\s*(.+?)(?=^\s*(?:\*\*\s*)?[a-zA-Z0-9_]+(?:\s*\*\*)?:|$)/gm;
+    
+    let match;
+    while ((match = regex.exec(cleanedResponse)) !== null) {
+        const key = match[1].trim().toLowerCase();
+        const value = match[2].trim().replace(/^["']|["']$/g, '');
         
-        const [key, ...valueParts] = line.split(':');
-        const value = valueParts.join(':').trim();
-        const cleanValue = value.replace(/^["']|["']$/g, '');
-        const trimmedKey = key.trim();
-        
-        if (fieldMapping[trimmedKey]) {
-            contentMap[trimmedKey] = {
-                path: fieldMapping[trimmedKey],
-                value: cleanValue
+        if (fieldMapping[key]) {
+            contentMap[key] = {
+                path: fieldMapping[key],
+                value
             };
+        } else {
+            console.log('unmapped key:', key, value.slice(0, 80));
         }
-    });
+    }
     
     return contentMap;
 }
