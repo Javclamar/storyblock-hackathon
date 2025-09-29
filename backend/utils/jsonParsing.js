@@ -47,15 +47,15 @@ function mergeWithStoryblok(storyblokData, generatedContent) {
 function parseAIResponse(rawResponse, fieldMapping) {
     const contentMap = {};
 
-    const cleanedResponse = rawResponse.replace(/^.*?(?=\n\s*[a-zA-Z0-9_]+\s*:)/s, '').trim();
-    
-    const regex = /^(?:\*\*\s*)?([a-zA-Z0-9_]+)(?:\s*\*\*)?:\s*(.+?)(?=^\s*(?:\*\*\s*)?[a-zA-Z0-9_]+(?:\s*\*\*)?:|$)/gm;
-    
+    const cleanedResponse = rawResponse.trim();
+
+    const regex = /^(?:\*\*\s*)?([a-zA-Z0-9_]+)(?:\s*\*\*)?:\s*(.+?)(?=^\s*(?:\*\*\s*)?[a-zA-Z0-9_]+(?:\s*\*\*)?:|$)/gms;
+
     let match;
     while ((match = regex.exec(cleanedResponse)) !== null) {
         const key = match[1].trim().toLowerCase();
         const value = match[2].trim().replace(/^["']|["']$/g, '');
-        
+
         if (fieldMapping[key]) {
             contentMap[key] = {
                 path: fieldMapping[key],
@@ -65,7 +65,7 @@ function parseAIResponse(rawResponse, fieldMapping) {
             console.log('unmapped key:', key, value.slice(0, 80));
         }
     }
-    
+
     return contentMap;
 }
 

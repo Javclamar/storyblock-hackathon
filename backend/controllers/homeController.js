@@ -72,17 +72,14 @@ Generate engaging content that would attract users to the OnTime platform:`;
 
         console.log(`Cache miss for ${preferences?.isComplete ? 'personalized' : 'generic'} content - ${cacheKey}`);
 
-        // Generate personalized prompt
         const personalizedPrompt = buildPersonalizedPrompt(preferences);
         
-        // Make AI request
         const aiData = await makeAIRequest(personalizedPrompt);
         
-        if (!aiData.response) {
+        if (!aiData) {
             throw new Error("No response from AI model");
         }
 
-        // Field mapping remains the same
         const fieldMapping = {
             'headline': ['hero', 'headline'],
             'subheadline': ['hero', 'subheadline'],  
@@ -95,10 +92,9 @@ Generate engaging content that would attract users to the OnTime platform:`;
             'feature3_description': ['features', 'items', 2, 'description']
         };
 
-        const parsedContent = parseAIResponse(aiData.response, fieldMapping);
+        const parsedContent = parseAIResponse(aiData, fieldMapping);
         const mergedContent = mergeWithStoryblok(blocks, parsedContent);
         
-        // Cache with personalized key
         await setCachedContent(cacheKey, 'hackathon/home', mergedContent);
 
         res.json({

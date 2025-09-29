@@ -53,7 +53,6 @@ Generate personalized content about OnTime's story and mission:`;
     };
     
     try {
-        // Check cache with personalized key
         const cached = await getCachedContent(cacheKey, 'hackathon/about');
 
         if (cached) {
@@ -69,27 +68,23 @@ Generate personalized content about OnTime's story and mission:`;
         
         console.log(`About page cache miss for ${preferences?.isComplete ? 'personalized' : 'generic'} content - ${cacheKey}`);
 
-        // Generate personalized prompt
         const personalizedPrompt = buildPersonalizedPrompt(preferences);
         
-        // Make AI request
         const aiData = await makeAIRequest(personalizedPrompt);
                 
-        if (!aiData.response) {
+        if (!aiData) {
             throw new Error("No response from AI model");
         }
 
-        // Field mapping remains the same
         const fieldMapping = {
             'title': ['about_hero', 'title'],
             'subtitle': ['about_hero', 'subtitle'],
             'description': ['about_hero', 'description']
         };
 
-        const parsedContent = parseAIResponse(aiData.response, fieldMapping);
+        const parsedContent = parseAIResponse(aiData, fieldMapping);
         const mergedContent = mergeWithStoryblok(blocks, parsedContent);
 
-        // Cache with personalized key
         await setCachedContent(cacheKey, 'hackathon/about', mergedContent);
 
         res.json({

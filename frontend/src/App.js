@@ -13,7 +13,7 @@ function Page({ slug, preferences }) {
 
     async function fetchAiContent() {
       try {
-        const response = await fetch(`http://localhost:5000/api/generate${slug}`, {
+        const response = await fetch(`https://storyblock-hackathon.onrender.com/api/generate${slug}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

@@ -1,5 +1,6 @@
 import express from "express"
 import cors from "cors";
+import "dotenv/config";
 import { sessionConfig, generateUserId } from "./utils/session.js";
 import homeController from "./controllers/homeController.js";
 import aboutController from "./controllers/aboutController.js";
