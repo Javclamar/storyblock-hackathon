@@ -9,7 +9,7 @@ function Page({ slug, preferences }) {
   const [aiContent, setAiContent] = useState(null);
 
   useEffect(() => {
-    if (!story?.content) return;
+    if (!story?.content || aiContent) return;
 
     async function fetchAiContent() {
       try {
@@ -34,7 +34,7 @@ function Page({ slug, preferences }) {
     }
 
     fetchAiContent();
-  }, [story, slug, preferences]);
+  }, [story, slug, preferences, aiContent]);
 
   if (!story?.content) {
     return (

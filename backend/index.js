@@ -7,7 +7,7 @@ import aboutController from "./controllers/aboutController.js";
 
 const app = express();
 app.use(cors({
-    origin: ['http://localhost:3000', 'https://localhost:3010'],
+    origin: ['https://storyblock-hackathon.vercel.app', 'http://localhost:3000'],
     credentials: true,
     methods: ['GET', 'POST'],
 }));
