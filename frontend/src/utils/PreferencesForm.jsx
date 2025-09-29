@@ -1,4 +1,5 @@
 import { useState } from "react";
+import "../styles/PreferencesForm.css"
 
 function PreferencesForm({ onSave }) {
   const [teamSize, setTeamSize] = useState("solo");
@@ -7,21 +8,21 @@ function PreferencesForm({ onSave }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const prefs = { teamSize, language, industry, isComplete: true };
+    const prefs = { teamSize, language, industry, isComplete: true, expiry: Date.now() + 60 * 1000 };
     localStorage.setItem("userPreferences", JSON.stringify(prefs));
     onSave(prefs);
   };
 
   return (
-    <div className="p-6 max-w-md mx-auto">
-      <h2 className="text-xl font-bold mb-4">Set your preferences</h2>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+    <div className="form">
+      <h2 className="title">Set your preferences</h2>
+      <form onSubmit={handleSubmit} className="form-content">
         <label>
-          :Team Size
+          Team Size:
           <select
             value={teamSize}
             onChange={(e) => setTeamSize(e.target.value)}
-            className="ml-2 border rounded p-1"
+            className="label"
           >
             <option value="solo">Solo</option>
             <option value="small team">Small Team</option>
@@ -35,7 +36,7 @@ function PreferencesForm({ onSave }) {
           <select
             value={language}
             onChange={(e) => setLanguage(e.target.value)}
-            className="ml-2 border rounded p-1"
+            className="label"
           >
             <option value="en">English</option>
             <option value="es">Español</option>
@@ -47,7 +48,7 @@ function PreferencesForm({ onSave }) {
           <select
             value={industry}
             onChange={(e) => setIndustry(e.target.value)}
-            className="ml-2 border rounded p-1"
+            className="label"
           >
             <option value="software">Software Development</option>
             <option value="education">Educational</option>
@@ -62,7 +63,7 @@ function PreferencesForm({ onSave }) {
 
         <button
           type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded"
+          className="submit-button"
         >
           Save Preferences
         </button>

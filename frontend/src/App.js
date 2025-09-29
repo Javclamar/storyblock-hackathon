@@ -2,6 +2,7 @@ import { StoryblokComponent, useStoryblok } from "@storyblok/react";
 import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import PreferencesForm from "./utils/PreferencesForm";
+import AILoadingAnimation from "./utils/LoadingAnimation";
 
 function Page({ slug, preferences }) {
   const story = useStoryblok(slug, { version: "draft" });
@@ -35,8 +36,17 @@ function Page({ slug, preferences }) {
     fetchAiContent();
   }, [story, slug, preferences]);
 
-  if (!story?.content) return <div>Loading Storyblok...</div>;
-  if (!aiContent) return <div>Generating AI content...</div>;
+  if (!story?.content) {
+    return (
+      <AILoadingAnimation />
+    );
+  }
+
+  if (!aiContent) {
+    return (
+      <AILoadingAnimation />
+    );
+  }
 
   return <StoryblokComponent blok={aiContent} />;
 }

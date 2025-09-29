@@ -8,7 +8,7 @@ const aboutController = async (req, res) => {
 
     console.log("Received preferences:", preferences);
     
-    const cacheKey = `${sessionId}-${preferences?.isComplete ? 'personalized' : 'generic'}`;
+    const cacheKey = `${sessionId}`;
 
     // Enhanced prompt that incorporates user preferences
     const buildPersonalizedPrompt = (preferences) => {

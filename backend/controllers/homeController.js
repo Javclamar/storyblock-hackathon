@@ -8,7 +8,7 @@ const homeController = async (req, res) => {
 
     console.log("Received preferences:", preferences);
     
-    const cacheKey = `${sessionId}-${preferences?.isComplete ? 'personalized' : 'generic'}`;
+    const cacheKey = `${sessionId}`;
 
     const buildPersonalizedPrompt = (preferences) => {
         let basePrompt = `You are generating content for a React + Storyblok home page for a SaaS that provides an online coworking space named OnTime.`;
