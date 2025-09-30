@@ -7,13 +7,14 @@ import AILoadingAnimation from "./utils/LoadingAnimation";
 function Page({ slug, preferences }) {
   const story = useStoryblok(slug, { version: "draft" });
   const [aiContent, setAiContent] = useState(null);
+  const backendUrl = process.env.REACT_APP_URL_BACKEND;
 
   useEffect(() => {
     if (!story?.content || aiContent) return;
 
     async function fetchAiContent() {
       try {
-        const response = await fetch(`https://storyblock-hackathon.onrender.com/api/generate${slug}`, {
+        const response = await fetch(`${backendUrl}/api/generate${slug}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -34,7 +35,7 @@ function Page({ slug, preferences }) {
     }
 
     fetchAiContent();
-  }, [story, slug, preferences, aiContent]);
+  }, [story, slug, preferences, aiContent, backendUrl]);
 
   if (!story?.content) {
     return (
