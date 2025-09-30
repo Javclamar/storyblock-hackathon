@@ -16,7 +16,7 @@ export async function makeAIRequest(prompt) {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), TIMEOUT);
 
-      // Using OpenAI's official Node.js SDK
+      /* Using OpenAI's official Node.js SDK
       const response = await client.chat.completions.create({
         model: "gpt-4o-mini",
         messages: [
@@ -32,8 +32,9 @@ export async function makeAIRequest(prompt) {
       console.log(response.choices[0].message.content);
 
       return response.choices[0].message.content;
+      */
 
-      /* Example of using a local LLM server
+      //Example of using a local LLM server
        const response = await fetch('http://localhost:11434/api/generate', {
                 method: 'POST',
                 signal: controller.signal,
@@ -61,7 +62,7 @@ export async function makeAIRequest(prompt) {
             const data = await response.json();
             console.log(data);
             return data.response;
-            */
+        
 
     } catch (error) {
       attempts++;
